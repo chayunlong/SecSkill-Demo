@@ -1,0 +1,101 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>登录</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<!--引入静态资源-->
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+<!--    bootstrap是一个很好的前端开发框架 可以很好的写出按钮、样式、处理浏览器兼容-->
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/css/login.css}"/>
+
+    <style>
+        .form-control{
+            font-size: 10px !important;
+        }
+        .error{
+            font-size: 10px !important;
+            color: red !important;
+            font-weight:100 !important;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <div class="title">
+        <h4>用户登录</h4>
+    </div>
+
+    <form name="loginForm" id="loginForm" method="post">
+        <div class="form-group">
+            <input id="mobile" name="mobile" class="form-control" type="text" placeholder="手机号码" required="true"
+                   minlength="11" maxlength="11"/>
+        </div>
+
+        <div class="form-group">
+            <input id="password" name="password" class="form-control" type="password" placeholder="密码"
+                   required="true" minlength="6" maxlength="16"/>
+        </div>
+<!--        登录按钮绑定函数login()-->
+        <button class="btn btn-primary btn-block" type="submit" onclick="login()">登录</button>
+    </form>
+
+</div>
+</body>
+<script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+<!--jquery有效性验证-->
+<!-- jquery-validator -->
+<script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+<script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+<!--layer主要就是负责去做一些弹框的-->
+<!-- layer -->
+<script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+<!-- md5.js 加密 -->
+<script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+<!-- common.js -->
+<script type="text/javascript" th:src="@{/js/common.js}"></script>
+<script>
+    function login() {
+        $("#loginForm").validate({
+            submitHandler: function (form) {
+                doLogin();
+            }
+        });
+    }
+
+    function doLogin() {
+        //加载的图标
+        g_showLoading();
+
+        var inputPass = $("#password").val();
+        var salt = g_passsword_salt;
+        var str = "" + salt.charAt(0) + salt.charAt(2) + inputPass + salt.charAt(5) + salt.charAt(4);
+        var password = md5(str);
+
+        //去调后端的接口
+        $.ajax({
+            url: "/user/doLogin",
+            type: "POST",
+            data: {
+                mobile: $("#mobile").val(),
+                password: password
+            },
+            success: function (data) {
+                layer.closeAll();
+                if (data.code == 200) {
+                    layer.msg("成功");
+                    window.location.href = "/goods/list";  //成功之后 跳转到href位置
+                } else {
+                    layer.msg(data.msg);
+                }
+            },
+            error: function () {
+                layer.closeAll();
+            }
+        });
+    }
+</script>
+</html>
